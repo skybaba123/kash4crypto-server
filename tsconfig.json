@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "jsx": "react",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        
+        "outDir": "dist",
+        "sourceMap": true,
+        "noImplicitAny": true,
+
+        "paths": {
+            "@/*": ["./src/*"]
+          }
+    },
+    "include": ["src/**/*"],
+    "exclude": [
+        "node_modules"
+    ]
+}
