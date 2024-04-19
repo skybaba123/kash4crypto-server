@@ -1,3 +1,4 @@
+import CatchError from "@/constants/CatchError";
 import cleanPhoneNumber from "@/constants/cleanPhoneNumber";
 // import formatDate from "@/constants/formatDate";
 // import sendEmail from "@/constants/sendEmail";
@@ -110,7 +111,7 @@ const approveTransactionHandler = async (req: any, res: any) => {
 
     return res.status(200).send();
   } catch (error) {
-    return res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: CatchError(error) });
   }
 };
 
