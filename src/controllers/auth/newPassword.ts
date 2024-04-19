@@ -1,10 +1,10 @@
 import Company from "@/models/company";
-import sendEmail from "@/constants/sendEmail";
+// import sendEmail from "@/constants/sendEmail";
 import User from "@/models/user";
 import bcrypt from "bcrypt";
-import formatDate from "@/constants/formatDate";
-import { render } from "@react-email/render";
-import PasswordUpdated from "@/email/PasswordUpdated";
+// import formatDate from "@/constants/formatDate";
+// import { render } from "@react-email/render";
+// import PasswordUpdated from "@/email/PasswordUpdated";
 import newActivity from "@/constants/newActivity";
 
 const newPasswordHandler = async (req: any, res: any) => {
@@ -13,7 +13,11 @@ const newPasswordHandler = async (req: any, res: any) => {
     const company = companies[0];
     if (!company) return res.status(404).send({ error: "No user found" });
 
-    const user = await User.findOne({ email: req.body.email });
+    let user;
+    user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      user = await User.findOne({ username: req.body.email });
+    }
     if (!user) return res.status(404).send({ error: "No user found" });
 
     if (!user.verificationCode || !user.verificationCodeExpiry)
@@ -35,26 +39,26 @@ const newPasswordHandler = async (req: any, res: any) => {
 
     await newActivity(req, user._id, "You updated your password");
 
-    const emailText = `You updated the password for your ${
-      company.name
-    } account on
-    ${formatDate(new Date())}.`;
+    // const emailText = `You updated the password for your ${
+    //   company.name
+    // } account on
+    // ${formatDate(new Date())}.`;
 
-    const emailHtml = render(
-      PasswordUpdated({
-        username: user.username,
-        updatedDate: new Date(),
-        company,
-      })
-    );
+    // const emailHtml = render(
+    //   PasswordUpdated({
+    //     username: user.username,
+    //     updatedDate: new Date(),
+    //     company,
+    //   })
+    // );
 
-    await sendEmail(
-      user.email,
-      "Password Changed",
-      emailText,
-      emailHtml,
-      company
-    );
+    // await sendEmail(
+    //   user.email,
+    //   "Password Changed",
+    //   emailText,
+    //   emailHtml,
+    //   company
+    // );
 
     return res.status(200).send();
   } catch (error) {

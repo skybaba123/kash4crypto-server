@@ -1,12 +1,14 @@
-import formatDate from "@/constants/formatDate";
-import sendEmail from "@/constants/sendEmail";
-import CustomEmail from "@/email/CustomEmail";
+import cleanPhoneNumber from "@/constants/cleanPhoneNumber";
+// import formatDate from "@/constants/formatDate";
+// import sendEmail from "@/constants/sendEmail";
+// import CustomEmail from "@/email/CustomEmail";
 import Alert from "@/models/alert";
 import Coin from "@/models/coin";
 import Company from "@/models/company";
 import Transaction from "@/models/transaction";
 import User from "@/models/user";
-import { render } from "@react-email/render";
+// import { render } from "@react-email/render";
+import axios from "axios";
 
 const approveTransactionHandler = async (req: any, res: any) => {
   try {
@@ -32,6 +34,11 @@ const approveTransactionHandler = async (req: any, res: any) => {
     if (requester.role !== "admin")
       return res.status(401).send({ error: "Unauthorized access" });
 
+    if (transaction.status === "successful")
+      return res
+        .status(400)
+        .send({ error: "This transaction has already been approved" });
+
     const updatedTransaction = await Transaction.findByIdAndUpdate(
       transaction._id,
       {
@@ -55,12 +62,15 @@ const approveTransactionHandler = async (req: any, res: any) => {
       ownerId: user._id,
     }).save();
 
+    const referrer =
+      user.referralUserId && (await User.findById(user.referralUserId));
+
     if (
       updatedTransaction.actuallyPaid >= company.referral.minTradeAmount &&
-      user.referralUserId &&
+      referrer &&
       company.referral.status === "on"
     ) {
-      await User.findByIdAndUpdate(user.referralUserId, {
+      await User.findByIdAndUpdate(referrer._id, {
         $inc: { referralBal: company.referral.earningAmount },
         $push: {
           referralTransaction: {
@@ -72,20 +82,31 @@ const approveTransactionHandler = async (req: any, res: any) => {
       });
     }
 
-    const mesageData = `We are pleased to inform you that your transaction has been approved successfully. The payment has been sent to your default bank account. |View Transaction: 
-    ${company.baseUrl}/user/transactions/${
-      updatedTransaction._id
-    } |Date: ${formatDate(new Date())}`;
-
-    const emailHtml = render(CustomEmail({ company, message: mesageData }));
-
-    await sendEmail(
-      user.email,
-      `Transaction Approved`,
-      mesageData,
-      emailHtml,
-      company
+    const transactionUrl = `${company.baseUrl}/user/transactions/${updatedTransaction._id}`;
+    await axios.post(
+      "https://gate.whapi.cloud/messages/image",
+      {
+        media: updatedTransaction.payoutProof.secure_url,
+        to: cleanPhoneNumber(user.phoneNumber),
+        caption: `We are pleased to inform you that your transaction has been approved successfully. View Transaction ${transactionUrl}`,
+        width: updatedTransaction.payoutProof.width,
+        height: updatedTransaction.payoutProof.height,
+      },
+      { headers: { Authorization: `Bearer ${process.env.WHAPI_TOKEN}` } }
     );
+
+    // const mesageData = `We are pleased to inform you that your transaction has been approved successfully. The payment has been sent to your default bank account. |View Transaction:
+    // ${transactionUrl} |Date: ${formatDate(new Date())}`;
+
+    // const emailHtml = render(CustomEmail({ company, message: mesageData }));
+
+    // await sendEmail(
+    //   user.email,
+    //   `Transaction Approved`,
+    //   mesageData,
+    //   emailHtml,
+    //   company
+    // );
 
     return res.status(200).send();
   } catch (error) {

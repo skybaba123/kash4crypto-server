@@ -2,7 +2,11 @@ import User from "@/models/user";
 
 const verifyOtpHandler = async (req: any, res: any) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    let user;
+    user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      user = await User.findOne({ username: req.body.email });
+    }
     if (!user) return res.status(404).send({ error: "No user found" });
 
     if (!user.verificationCode || !user.verificationCodeExpiry)

@@ -1,11 +1,11 @@
-import formatDate from "@/constants/formatDate";
-import sendEmail from "@/constants/sendEmail";
-import CustomEmail from "@/email/CustomEmail";
+// import formatDate from "@/constants/formatDate";
+// import sendEmail from "@/constants/sendEmail";
+// import CustomEmail from "@/email/CustomEmail";
 import Alert from "@/models/alert";
 import Company from "@/models/company";
 import Transaction from "@/models/transaction";
 import User from "@/models/user";
-import { render } from "@react-email/render";
+// import { render } from "@react-email/render";
 
 const rejectTransactionHandler = async (req: any, res: any) => {
   try {
@@ -40,20 +40,20 @@ const rejectTransactionHandler = async (req: any, res: any) => {
       ownerId: user._id,
     }).save();
 
-    const mesageData = `We regret to inform you that your recent transaction has encountered an issue and could not be completed successfully. The payment for this transaction was not processed. |Please review the details of the transaction and ensure that all information is accurate. If you believe there was an error or need further assistance, don't hesitate to reach out to our support team. |View Transaction:
-    ${company.baseUrl}/user/transactions/${
-      updatedTransaction._id
-    } |Date: ${formatDate(new Date())}`;
+    // const mesageData = `We regret to inform you that your recent transaction has encountered an issue and could not be completed successfully. The payment for this transaction was not processed. |Please review the details of the transaction and ensure that all information is accurate. If you believe there was an error or need further assistance, don't hesitate to reach out to our support team. |View Transaction:
+    // ${company.baseUrl}/user/transactions/${
+    //   updatedTransaction._id
+    // } |Date: ${formatDate(new Date())}`;
 
-    const emailHtml = render(CustomEmail({ company, message: mesageData }));
+    // const emailHtml = render(CustomEmail({ company, message: mesageData }));
 
-    await sendEmail(
-      user.email,
-      `Transaction Failed`,
-      mesageData,
-      emailHtml,
-      company
-    );
+    // await sendEmail(
+    //   user.email,
+    //   `Transaction Failed`,
+    //   mesageData,
+    //   emailHtml,
+    //   company
+    // );
 
     return res.status(200).send();
   } catch (error) {
