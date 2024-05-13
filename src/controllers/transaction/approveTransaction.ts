@@ -111,7 +111,7 @@ const approveTransactionHandler = async (req: any, res: any) => {
 
     return res.status(200).send();
   } catch (error) {
-    return res.status(500).send({ error: CatchError(error) });
+    return res.status(500).send({ error: error.message });
   }
 };
 
